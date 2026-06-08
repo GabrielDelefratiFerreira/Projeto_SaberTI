@@ -1,0 +1,111 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #eef4ff;
+}
+
+body > div {
+    width: 100%;
+    max-width: 420px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 20px #cbd5e1;
+}
+
+label {
+    font-weight: bold;
+    color: #334155;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    background-color: #0f766e;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #115e59;
+}
+
+a {
+    text-decoration: none;
+}
+
+.botao-cinza {
+    background-color: #475569;
+}
+
+#mensagem-login {
+    min-height: 20px;
+    color: red;
+    text-align: center;
+    font-weight: bold;
+}
+
+h1,
+h2 {
+    color: #153b72;
+    text-align: center;
+}
+
+.pagina-clientes {
+    align-items: flex-start;
+}
+
+.pagina-clientes > div {
+    max-width: 900px;
+}
+
+.pagina-clientes > div > div {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+}
+
+th {
+    color: white;
+    background-color: #153b72;
+}
+
+tr:nth-child(even) {
+    background-color: #f1f5f9;
+}
