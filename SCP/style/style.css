@@ -39,6 +39,14 @@ input {
     font-size: 16px;
 }
 
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
 button {
     width: 100%;
     padding: 12px;
@@ -85,6 +93,30 @@ h2 {
 }
 
 .pagina-clientes > div > div {
+    overflow-x: auto;
+}
+
+.pagina-produtos {
+    align-items: flex-start;
+}
+
+.pagina-produtos > div {
+    max-width: 1200px;
+}
+
+.pagina-produtos > div > div {
+    overflow-x: auto;
+}
+
+.pagina-orcamentos {
+    align-items: flex-start;
+}
+
+.pagina-orcamentos > div {
+    max-width: 1200px;
+}
+
+.pagina-orcamentos > div > div {
     overflow-x: auto;
 }
 

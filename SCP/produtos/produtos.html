@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style/style.css">
+    <title>Produtos</title>
+</head>
+<body class="pagina-produtos">
+    <div>
+        <h1>Cadastro de Produtos</h1>
+        <div id="mensagem"></div>
+
+        <form id="formularioProduto">
+
+            <label for="codigoProduto">Código do produto</label>
+            <input type="text" id="codigoProduto" readonly>
+
+            <label for="categoriaProduto">Categoria do produto</label>
+            <select id="categoriaProduto">
+                <option value="">Selecione uma categoria</option>
+            </select>
+
+            <label for="descricaoProduto">Descrição</label>
+            <input type="text" id="descricaoProduto" placeholder="Digite a descrição do produto">
+
+            <label for="observacaoProduto">Observação</label>
+            <input type="text" id="observacaoProduto" placeholder="Digite uma observação">
+
+            <label for="valorVendaProduto">Valor de venda</label>
+            <input type="number" id="valorVendaProduto" placeholder="Digite o valor de venda" step="0.01">
+
+            <label for="dataCadastroProduto">Data de cadastro</label>
+            <input type="date" id="dataCadastroProduto">
+
+            <label for="statusProduto">Status</label>
+            <select id="statusProduto">
+                <option value="ATIVO">Ativo</option>
+                <option value="INATIVO">Inativo</option>
+            </select>
+
+            <button type="submit" id="botaoSalvar"
+            >Cadastrar</button>
+
+            <button type="button" id="botaoCancelarEdicao" style="display:none"
+            >Cancelar edição</button>
+        </form>
+
+        <a href="../menu/home.html">
+            <button class="botao-cinza">Voltar</button>
+        </a>
+
+        <div>
+            <h2>Produtos cadastrados</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Categoria</th>
+                        <th>Descrição</th>
+                        <th>Observação</th>
+                        <th>Valor venda</th>
+                        <th>Data cadastro</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaProdutos"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="produtos.js"></script>
+
+</body>
+</html>

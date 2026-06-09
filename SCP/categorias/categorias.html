@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style/style.css">
+    <title>Categorias</title>
+</head>
+<body class="pagina-categorias">
+    <div>
+        <h1>Cadastro de Categorias</h1>
+        <div id="mensagem"></div>
+
+        <form id="formularioCategoria">
+            <label for="codigoCategoria">Código Categoria</label>
+            <input type="text" id="codigoCategoria" readonly>
+
+            <label for="descricaoCategoria">Descrição</label>
+            <input type="text" id="descricaoCategoria" placeholder="Digite a descrição da categoria">
+
+            <button type="submit" id="botaoSalvar">Cadastrar</button>
+
+            <button type="button" id="botaoCancelarEdicao" style="display:none">Cancelar edição</button>
+        </form>
+
+        <a href="../menu/home.html">
+            <button class="botao-cinza">Voltar</button>
+        </a>
+
+        <div>
+            <h2>Categorias cadastradas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaCategorias"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="categorias.js"></script>
+
+</body>
+</html>

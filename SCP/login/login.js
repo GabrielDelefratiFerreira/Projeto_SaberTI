@@ -11,7 +11,7 @@ function validarLogin() {
     const senhaDigitada = inputDaSenha.value.trim();
 
     if (usuarioDigitado == usuario && senhaDigitada == senha) {
-        window.location.href = "home.html";
+        window.location.href = "../menu/home.html";
         return;
     }
 
