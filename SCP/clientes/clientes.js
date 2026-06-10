@@ -37,6 +37,10 @@ const supabaseClient = supabase.createClient(
 const formCliente = document.getElementById("formularioCliente");
 const tabelaClientes = document.getElementById("corpoTabelaClientes");
 const clienteIdInput = document.getElementById("codigoCliente");
+const tipoClienteInput = document.getElementById("tipoCliente");
+const cpfCnpjClienteInput = document.getElementById("cpfCnpjCliente");
+const nomeClienteInput = document.getElementById("nomeCliente");
+const mensagem = document.getElementById("mensagem");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
 /*
@@ -337,8 +341,13 @@ async function salvarCliente() {
     Pegamos os valores digitados no formulário.
   */
   const tipoCliente = tipoClienteInput.value;
-  const cpfCnpjCliente = cpfCnpjClienteInput.value;
-  const nomeCliente = nomeClienteInput.value;
+  const cpfCnpjCliente = cpfCnpjClienteInput.value.trim();
+  const nomeCliente = nomeClienteInput.value.trim();
+
+  if (tipoCliente === "" || cpfCnpjCliente === "" || nomeCliente === "") {
+    mostrarMensagem("Preencha todos os campos antes de salvar.", "erro");
+    return;
+  }
 
   /*
     Montamos o objeto que será enviado para o Supabase.
@@ -379,7 +388,7 @@ async function salvarCliente() {
   /*
     Recarregamos a listagem para mostrar o novo cliente na tabela.
   */
-  carregarClientes();
+  await carregarClientes();
 }
 
 /*
@@ -401,7 +410,12 @@ async function atualizarNomeCliente() {
   /*
     Pegamos o novo nome digitado.
   */
-  const nomeCliente = nomeClienteInput.value;
+  const nomeCliente = nomeClienteInput.value.trim();
+
+  if (nomeCliente === "") {
+    mostrarMensagem("Informe o nome do cliente antes de atualizar.", "erro");
+    return;
+  }
 
   /*
     Atualizamos somente a coluna nome_cliente.
@@ -427,17 +441,14 @@ async function atualizarNomeCliente() {
   /*
     Se deu certo, mostramos mensagem de sucesso.
   */
-  mostrarMensagem("Nome atualizado com sucesso!", "sucesso");
-
-  /*
-    Saímos do modo edição.
-  */
   cancelarEdicao();
+
+  mostrarMensagem("Cliente atualizado com sucesso!", "sucesso");
 
   /*
     Recarregamos a tabela para mostrar o nome atualizado.
   */
-  carregarClientes();
+  await carregarClientes();
 }
 
 /*
@@ -506,7 +517,7 @@ async function excluirCliente(cliente) {
   /*
     Recarrega a tabela para remover visualmente o cliente excluído.
   */
-  carregarClientes();
+  await carregarClientes();
 }
 
 /*
@@ -564,5 +575,3 @@ btnCancelarEdicao.addEventListener("click", function() {
 */
 
 carregarClientes();
-
-console.log("JavaScript carregado!");

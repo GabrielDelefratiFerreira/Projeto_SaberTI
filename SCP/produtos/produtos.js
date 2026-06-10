@@ -23,6 +23,30 @@ function mostrarMensagem(texto, tipo) {
   mensagem.className = "mensagem " + tipo;
 }
 
+async function buscarProximoCodigoProduto() {
+  const { data, error } = await supabaseClient
+    .from("produto")
+    .select("produtoid")
+    .order("produtoid", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    return { codigo: null, error };
+  }
+
+  const maiorCodigo = data.length > 0 ? Number(data[0].produtoid) : 0;
+
+  return { codigo: maiorCodigo + 1, error: null };
+}
+
+async function inserirProduto(produto) {
+  const { error } = await supabaseClient
+    .from("produto")
+    .insert(produto);
+
+  return error;
+}
+
 function formatarValor(valor) {
   return Number(valor || 0).toLocaleString("pt-BR", {
     style: "currency",
@@ -203,9 +227,21 @@ async function salvarProduto() {
     return;
   }
 
-  const { error } = await supabaseClient
-    .from("produto")
-    .insert(novoProduto);
+  let error = await inserirProduto(novoProduto);
+
+  if (error && error.message.includes("duplicate key value")) {
+    const resultadoCodigo = await buscarProximoCodigoProduto();
+
+    if (resultadoCodigo.error) {
+      mostrarMensagem("Erro ao buscar prÃ³ximo cÃ³digo do produto: " + resultadoCodigo.error.message, "erro");
+      return;
+    }
+
+    error = await inserirProduto({
+      produtoid: resultadoCodigo.codigo,
+      ...novoProduto
+    });
+  }
 
   if (error) {
     mostrarMensagem("Erro ao salvar produto: " + error.message, "erro");
@@ -214,7 +250,7 @@ async function salvarProduto() {
 
   mostrarMensagem("Produto salvo com sucesso!", "sucesso");
   formProduto.reset();
-  carregarProdutos();
+  await carregarProdutos();
 }
 
 async function atualizarProduto() {
@@ -235,9 +271,9 @@ async function atualizarProduto() {
     return;
   }
 
-  mostrarMensagem("Produto atualizado com sucesso!", "sucesso");
   cancelarEdicao();
-  carregarProdutos();
+  mostrarMensagem("Produto atualizado com sucesso!", "sucesso");
+  await carregarProdutos();
 }
 
 async function excluirProduto(produto) {
@@ -264,7 +300,7 @@ async function excluirProduto(produto) {
   }
 
   mostrarMensagem("Produto excluído com sucesso!", "sucesso");
-  carregarProdutos();
+  await carregarProdutos();
 }
 
 formProduto.addEventListener("submit", async function(evento) {

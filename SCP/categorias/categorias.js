@@ -16,6 +16,30 @@ function mostrarMensagem(texto, tipo) {
   mensagem.className = "mensagem " + tipo;
 }
 
+async function buscarProximoCodigoCategoria() {
+  const { data, error } = await supabaseClient
+    .from("categoria_produto")
+    .select("categoriaprodutoid")
+    .order("categoriaprodutoid", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    return { codigo: null, error };
+  }
+
+  const maiorCodigo = data.length > 0 ? Number(data[0].categoriaprodutoid) : 0;
+
+  return { codigo: maiorCodigo + 1, error: null };
+}
+
+async function inserirCategoria(categoria) {
+  const { error } = await supabaseClient
+    .from("categoria_produto")
+    .insert(categoria);
+
+  return error;
+}
+
 async function carregarCategorias() {
   const { data, error } = await supabaseClient
     .from("categoria_produto")
@@ -99,11 +123,23 @@ async function salvarCategoria() {
     return;
   }
 
-  const { error } = await supabaseClient
-    .from("categoria_produto")
-    .insert({
+  let error = await inserirCategoria({
+    ds_categoria_produto: descricaoCategoria
+  });
+
+  if (error && error.message.includes("duplicate key value")) {
+    const resultadoCodigo = await buscarProximoCodigoCategoria();
+
+    if (resultadoCodigo.error) {
+      mostrarMensagem("Erro ao buscar prÃ³ximo cÃ³digo da categoria: " + resultadoCodigo.error.message, "erro");
+      return;
+    }
+
+    error = await inserirCategoria({
+      categoriaprodutoid: resultadoCodigo.codigo,
       ds_categoria_produto: descricaoCategoria
     });
+  }
 
   if (error) {
     mostrarMensagem("Erro ao salvar categoria: " + error.message, "erro");
@@ -112,7 +148,7 @@ async function salvarCategoria() {
 
   mostrarMensagem("Categoria salva com sucesso!", "sucesso");
   formCategoria.reset();
-  carregarCategorias();
+  await carregarCategorias();
 }
 
 async function atualizarCategoria() {
@@ -136,9 +172,9 @@ async function atualizarCategoria() {
     return;
   }
 
-  mostrarMensagem("Categoria atualizada com sucesso!", "sucesso");
   cancelarEdicao();
-  carregarCategorias();
+  mostrarMensagem("Categoria atualizada com sucesso!", "sucesso");
+  await carregarCategorias();
 }
 
 async function excluirCategoria(categoria) {
@@ -165,7 +201,7 @@ async function excluirCategoria(categoria) {
   }
 
   mostrarMensagem("Categoria excluída com sucesso!", "sucesso");
-  carregarCategorias();
+  await carregarCategorias();
 }
 
 formCategoria.addEventListener("submit", async function(evento) {

@@ -13,10 +13,14 @@
         
         <form id="formularioCliente">
             <label for="codigoCliente">Código</label>
-            <input type="text" id="codigoCliente" readonly>
+            <input type="text" id="codigoCliente" readonly placeholder="Gerado automaticamente.">
 
             <label for="tipoCliente">Tipo do cliente</label>
-            <input type="text" id="tipoCliente" placeholder="Física/Jurídica">
+            <select id="tipoCliente">
+                <option value="">Selecione</option>
+                <option value="F">Pessoa Física</option>
+                <option value="J">Pessoa Jurídica</option>
+            </select>
 
             <label for="cpfCnpjCliente">CPF/CNPJ</label>
             <input type="text" id="cpfCnpjCliente" placeholder="Digite seu CPF/CNPJ">
