@@ -9,36 +9,41 @@
 <body class="pagina-categorias">
     <div>
         <h1>Cadastro de Categorias</h1>
+
+        <button type="button" id="botaoNovaCategoria">Nova categoria</button>
+
         <div id="mensagem"></div>
+        
+        <div id="painelCategoria" display="none">
+            <form id="formularioCategoria">
+                <label for="codigoCategoria">Código Categoria</label>
+                <input type="text" id="codigoCategoria" placeholder="Gerado automaticamente." readonly>
 
-        <form id="formularioCategoria">
-            <label for="codigoCategoria">Código Categoria</label>
-            <input type="text" id="codigoCategoria" readonly>
+                <label for="descricaoCategoria">Descrição</label>
+                <input type="text" id="descricaoCategoria" placeholder="Digite a descrição da categoria">
 
-            <label for="descricaoCategoria">Descrição</label>
-            <input type="text" id="descricaoCategoria" placeholder="Digite a descrição da categoria">
+                <button type="submit" id="botaoSalvar">Cadastrar</button>
 
-            <button type="submit" id="botaoSalvar">Cadastrar</button>
-
-            <button type="button" id="botaoCancelarEdicao" style="display:none">Cancelar edição</button>
-        </form>
-
+                <button type="button" id="botaoCancelarEdicao" style="display:none">Cancelar edição</button>
+            </form>
+        </div>
         <a href="../menu/home.html" id="voltar">
             <button class="botao-cinza">Voltar</button>
         </a>
-
-        <div>
-            <h2>Categorias cadastradas</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Descrição</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="corpoTabelaCategorias"></tbody>
-            </table>
+        <div id="secaoListagemCategorias">
+            <div>
+                <h2>Categorias cadastradas</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabelaCategorias"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 

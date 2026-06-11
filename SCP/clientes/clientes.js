@@ -88,6 +88,28 @@ function formatarTipoCliente(tipoCliente) {
 }
 
 /*
+FORMATAR CPF E CNPJ
+*/
+  
+function formatarCPFeCNPJ(cpfCnpjCliente){
+
+  if (!cpfCnpjCliente) {
+    return '';
+  }
+
+  const apenasNumero = String(cpfCnpjCliente).replace(/\D/g, '');
+
+  if (apenasNumero.length === 11) {
+    return apenasNumero.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  }
+
+  if (apenasNumero.length === 14) {
+    return apenasNumero.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  }
+
+  return apenasNumero;
+}
+/*
   ============================================
   CARREGAR CLIENTES
   ============================================
@@ -174,7 +196,7 @@ async function carregarClientes() {
     linha.innerHTML = `
       <td>${cliente.clienteid}</td>
       <td>${formatarTipoCliente(cliente.tipo_cliente)}</td>
-      <td>${cliente.cpf_cnpj_cliente}</td>
+      <td>${formatarCPFeCNPJ(cliente.cpf_cnpj_cliente)}</td>
       <td>${cliente.nome_cliente}</td>
       <td class="coluna-acoes"></td>
     `;
@@ -344,8 +366,10 @@ async function salvarCliente() {
     Pegamos os valores digitados no formulário.
   */
   const tipoCliente = tipoClienteInput.value;
-  const cpfCnpjCliente = cpfCnpjClienteInput.value.trim();
   const nomeCliente = nomeClienteInput.value.trim();
+  const inputCpfCnpj = document.getElementById("cpfCnpjCliente");
+  const cpfCnpjCliente = cpfCnpjClienteInput.value.trim();
+  const apenasNumero = inputCpfCnpj.value.replace(/\D/g, '');
 
   if (tipoCliente === "" && cpfCnpjCliente === "" && nomeCliente === "") {
     mostrarMensagem("Preencha todos os campos antes de salvar.", "erro");
@@ -364,6 +388,11 @@ if (cpfCnpjCliente === "") {
 
 if (nomeCliente === "") {
   mostrarMensagem("Informe o nome do cliente.", "erro");
+  return;
+}
+
+if (apenasNumero.length != 11 && apenasNumero.length != 14) {
+  mostrarMensagem("Verifique a quantidade de números digitados.", "erro");
   return;
 }
 

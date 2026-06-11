@@ -11,6 +11,10 @@ const descricaoCategoriaInput = document.getElementById("descricaoCategoria");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
 const idVoltar = document.getElementById("voltar");
+const botaoNovaCategoria = document.getElementById("botaoNovaCategoria");
+const painelCategoria = document.getElementById("painelCategoria");
+const formularioCategoria = document.getElementById("formularioCategoria");
+const secaoCategoriaCadastradas = document.getElementById("secaoListagemCategorias");
 
 function mostrarMensagem(texto, tipo) {
   mensagem.textContent = texto;
@@ -100,6 +104,7 @@ async function carregarCategorias() {
 }
 
 function prepararEdicao(categoria) {
+  abrirFormulario();
   categoriaIdInput.value = categoria.categoriaprodutoid;
   descricaoCategoriaInput.value = categoria.ds_categoria_produto;
   btnSalvar.textContent = "Atualizar";
@@ -115,7 +120,6 @@ function cancelarEdicao() {
   btnSalvar.textContent = "Cadastrar";
   btnSalvar.classList.remove("btn-editar");
   btnCancelarEdicao.style.display = "none";
-  idVoltar.style.display = "block";
   mensagem.textContent = "";
   mensagem.className = "mensagem";
 }
@@ -153,6 +157,7 @@ async function salvarCategoria() {
 
   mostrarMensagem("Categoria salva com sucesso!", "sucesso");
   formCategoria.reset();
+  fecharFormulario();
   await carregarCategorias();
 }
 
@@ -206,11 +211,39 @@ async function excluirCategoria(categoria) {
   }
 
   if (categoriaIdInput.value == categoria.categoriaprodutoid) {
-    cancelarEdicao();
+    limparFormulario();
   }
 
   mostrarMensagem("Categoria excluída com sucesso!", "sucesso");
   await carregarCategorias();
+}
+
+function limparFormulario() {
+  formCategoria.reset();
+  btnSalvar.textContent = "Cadastrar";
+  btnSalvar.classList.remove("btn-editar");
+  btnCancelarEdicao.textContent = "Cancelar cadastro";
+  idVoltar.style.display = "block";
+}
+
+function abrirFormulario() {
+  painelCategoria.style.display = "block";
+  botaoNovaCategoria.style.display = "none";
+  idVoltar.style.display = "none";
+  secaoCategoriaCadastradas.style.display = "none";
+  btnCancelarEdicao.style.display = "none";
+  btnCancelarEdicao.textContent = "Cancelar cadastro"
+}
+
+function fecharFormulario() {
+  limparFormulario();
+  painelCategoria.style.display = "none";
+  botaoNovaCategoria.style.display = "block";
+  idVoltar.style.display = "block";
+  secaoCategoriaCadastradas.style.display = "block";
+  mensagem.textContent = "";
+  mensagem.className = "mensagem";
+
 }
 
 formCategoria.addEventListener("submit", async function(evento) {
@@ -223,8 +256,12 @@ formCategoria.addEventListener("submit", async function(evento) {
   }
 });
 
+botaoNovaCategoria.addEventListener("click", function() {
+  abrirFormulario();
+});
+
 btnCancelarEdicao.addEventListener("click", function() {
-  cancelarEdicao();
+  fecharFormulario();;
 });
 
 carregarCategorias();
