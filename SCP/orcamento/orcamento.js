@@ -1,3 +1,4 @@
+//conexão com supabase
 const SUPABASE_URL = "https://bbphzdnivlifviemxgff.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_5DZjx6V6Cp68QRaFp-xE3g_u_lGR-CC";
 
@@ -20,7 +21,12 @@ const valorTotalItemOrcamentoInput = document.getElementById("valorTotalItemOrca
 const btnAdicionarItem = document.getElementById("botaoAdicionarItem");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
+const idVoltar = document.getElementById("voltar");
+const botaoNovoOrcamento = document.getElementById("botaoNovoOrcamento");
+const formularioOrcamento = document.getElementById("formularioOrcamento");
+const painelFormulario = document.getElementById("painelFormulario");
 
+//lista para armazenar dados
 let clientes = [];
 let produtos = [];
 let itensOrcamento = [];
@@ -349,11 +355,12 @@ async function salvarOrcamento() {
   }
 
   mostrarMensagem("Orçamento salvo com sucesso!", "sucesso");
-  limparFormulario();
+  fecharFormulario();
   carregarOrcamentos();
 }
 
 async function prepararEdicao(orcamento) {
+  abrirFormulario();
   const { data, error } = await supabaseClient
     .from("orcamento_item")
     .select("orcamentoitemid, produtoid, produtodesc, qt_produto, vl_unitario, vl_total")
@@ -373,7 +380,9 @@ async function prepararEdicao(orcamento) {
   itensOrcamento = data;
   renderizarItensOrcamento();
   btnSalvar.textContent = "Atualizar";
-  btnCancelarEdicao.style.display = "inline-block";
+  btnSalvar.classList.add("btn-editar");
+  btnCancelarEdicao.textContent = "Cancelar edição";
+  idVoltar.style.display = "none";
   mostrarMensagem("Editando o orçamento: " + orcamento.orcamentoid, "sucesso");
 }
 
@@ -414,7 +423,7 @@ async function atualizarOrcamento() {
   }
 
   mostrarMensagem("Orçamento atualizado com sucesso!", "sucesso");
-  limparFormulario();
+  fecharFormulario();
   carregarOrcamentos();
 }
 
@@ -463,8 +472,31 @@ function limparFormulario() {
   limparCamposItem();
   renderizarItensOrcamento();
   btnSalvar.textContent = "Cadastrar";
-  btnCancelarEdicao.style.display = "none";
+  btnSalvar.classList.remove("btn-editar");
+  btnCancelarEdicao.textContent = "Cancelar cadastro";
+  idVoltar.style.display = "block";
 }
+
+function abrirFormulario() {
+  painelFormulario.style.display = "block";
+  botaoNovoOrcamento.style.display = "none";
+  idVoltar.style.display = "none";
+  btnCancelarEdicao.textContent = "Cancelar cadastro"
+}
+
+function fecharFormulario() {
+  limparFormulario();
+  painelFormulario.style.display = "none";
+
+  botaoNovoOrcamento.style.display = "block";
+  mensagem.textContent = "";
+  mensagem.className = "mensagem";
+
+}
+
+botaoNovoOrcamento.addEventListener("click", function() {
+  abrirFormulario();
+});
 
 produtoItemOrcamentoInput.addEventListener("change", function() {
   const produto = buscarProduto(produtoItemOrcamentoInput.value);
@@ -505,9 +537,7 @@ formOrcamento.addEventListener("submit", async function(evento) {
 });
 
 btnCancelarEdicao.addEventListener("click", function() {
-  limparFormulario();
-  mensagem.textContent = "";
-  mensagem.className = "mensagem";
+  fecharFormulario();
 });
 
 async function iniciarPagina() {

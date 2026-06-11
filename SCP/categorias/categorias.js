@@ -10,6 +10,7 @@ const categoriaIdInput = document.getElementById("codigoCategoria");
 const descricaoCategoriaInput = document.getElementById("descricaoCategoria");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
+const idVoltar = document.getElementById("voltar");
 
 function mostrarMensagem(texto, tipo) {
   mensagem.textContent = texto;
@@ -102,7 +103,9 @@ function prepararEdicao(categoria) {
   categoriaIdInput.value = categoria.categoriaprodutoid;
   descricaoCategoriaInput.value = categoria.ds_categoria_produto;
   btnSalvar.textContent = "Atualizar";
+  btnSalvar.classList.add("btn-editar");
   btnCancelarEdicao.style.display = "inline-block";
+  idVoltar.style.display = "none";
   mostrarMensagem("Editando a categoria: " + categoria.ds_categoria_produto, "sucesso");
 }
 
@@ -110,7 +113,9 @@ function cancelarEdicao() {
   formCategoria.reset();
   categoriaIdInput.value = "";
   btnSalvar.textContent = "Cadastrar";
+  btnSalvar.classList.remove("btn-editar");
   btnCancelarEdicao.style.display = "none";
+  idVoltar.style.display = "block";
   mensagem.textContent = "";
   mensagem.className = "mensagem";
 }
@@ -192,7 +197,11 @@ async function excluirCategoria(categoria) {
     .eq("categoriaprodutoid", categoria.categoriaprodutoid);
 
   if (error) {
+    if (error.message.includes("produto_categoriaprodutoid_fkey")) {
+    mostrarMensagem("Não é possível excluir esta categoria, existe produto(s) vinculado(s) a ela.", "erro");
+  } else {
     mostrarMensagem("Erro ao excluir categoria: " + error.message, "erro");
+  }
     return;
   }
 

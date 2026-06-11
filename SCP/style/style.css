@@ -141,3 +141,42 @@ th {
 tr:nth-child(even) {
     background-color: #f1f5f9;
 }
+
+form{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.coluna-acoes{
+    display: flex;
+    gap: 8px;
+}
+
+.btn-editar {
+    background-color: #2563eb;
+}
+
+.btn-editar:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-excluir {
+    background-color: #dc2626;
+}
+
+.btn-excluir:hover {
+    background-color: #b91c1c;
+}
+
+.btn-cancelar {
+    background-color: #475569;
+}
+
+.btn-cancelar:hover {
+    background-color: #334155;
+}
+
+#painelFormulario{
+    display: none;
+}

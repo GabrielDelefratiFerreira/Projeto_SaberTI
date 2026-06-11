@@ -43,6 +43,7 @@ const nomeClienteInput = document.getElementById("nomeCliente");
 const mensagem = document.getElementById("mensagem");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
+const idVoltar = document.getElementById("voltar");
 /*
   ============================================
   FUNÇÃO PARA MOSTRAR MENSAGEM NA TELA
@@ -271,12 +272,13 @@ function prepararEdicao(cliente) {
     Mudamos o texto do botão principal para "Atualizar".
   */
   btnSalvar.textContent = "Atualizar";
+  btnSalvar.classList.add("btn-editar");
 
   /*
     Mostramos o botão Cancelar edição.
   */
   btnCancelarEdicao.style.display = "inline-block";
-
+  idVoltar.style.display = "none";
   /*
     Mostramos uma mensagem informando que o usuário está editando.
   */
@@ -312,13 +314,14 @@ function cancelarEdicao() {
   /*
     Volta o botão principal para "Salvar".
   */
-  btnSalvar.textContent = "Salvar";
+  btnSalvar.textContent = "Cadastrar";
 
+  btnSalvar.classList.remove("btn-editar");
   /*
     Esconde novamente o botão Cancelar edição.
   */
   btnCancelarEdicao.style.display = "none";
-
+  idVoltar.style.display = "block";
   /*
     Limpa a área de mensagem.
   */
@@ -344,10 +347,25 @@ async function salvarCliente() {
   const cpfCnpjCliente = cpfCnpjClienteInput.value.trim();
   const nomeCliente = nomeClienteInput.value.trim();
 
-  if (tipoCliente === "" || cpfCnpjCliente === "" || nomeCliente === "") {
+  if (tipoCliente === "" && cpfCnpjCliente === "" && nomeCliente === "") {
     mostrarMensagem("Preencha todos os campos antes de salvar.", "erro");
     return;
   }
+
+  if (tipoCliente === "") {
+  mostrarMensagem("Selecione o tipo do cliente.", "erro");
+  return;
+}
+
+if (cpfCnpjCliente === "") {
+  mostrarMensagem("Informe o CPF/CNPJ do cliente.", "erro");
+  return;
+}
+
+if (nomeCliente === "") {
+  mostrarMensagem("Informe o nome do cliente.", "erro");
+  return;
+}
 
   /*
     Montamos o objeto que será enviado para o Supabase.
@@ -497,7 +515,11 @@ async function excluirCliente(cliente) {
     Se houver erro, mostramos uma mensagem.
   */
   if (error) {
+    if (error.message.includes("violates foreign key constraint") || error.message.includes("orcamento_clienteid_fkey")) {
+    mostrarMensagem("Não é possível excluir este cliente, ele(a) possui orçamento(s) cadastrados.", "erro");
+  } else {
     mostrarMensagem("Erro ao excluir cliente: " + error.message, "erro");
+  }
     return;
   }
 

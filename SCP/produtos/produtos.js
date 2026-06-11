@@ -15,6 +15,7 @@ const dataCadastroProdutoInput = document.getElementById("dataCadastroProduto");
 const statusProdutoInput = document.getElementById("statusProduto");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
+const idVoltar = document.getElementById("voltar");
 
 let categorias = [];
 
@@ -172,7 +173,9 @@ function prepararEdicao(produto) {
   dataCadastroProdutoInput.value = formatarDataInput(produto.dt_cadastro_produto);
   statusProdutoInput.value = produto.status_produto;
   btnSalvar.textContent = "Atualizar";
+  btnSalvar.classList.add("btn-editar");
   btnCancelarEdicao.style.display = "inline-block";
+  idVoltar.style.display = "none";
   mostrarMensagem("Editando o produto: " + produto.ds_produto, "sucesso");
 }
 
@@ -180,7 +183,9 @@ function cancelarEdicao() {
   formProduto.reset();
   produtoIdInput.value = "";
   btnSalvar.textContent = "Cadastrar";
+  btnSalvar.classList.remove("btn-editar");
   btnCancelarEdicao.style.display = "none";
+  idVoltar.style.display = "block";
   mensagem.textContent = "";
   mensagem.className = "mensagem";
 }
@@ -207,6 +212,11 @@ function validarProduto(produto) {
     return false;
   }
 
+  if (produto.obs_produto === "") {
+    mostrarMensagem("Informe a observação do produto.", "erro");
+    return false;
+  }
+
   if (!produto.vl_venda_produto || produto.vl_venda_produto <= 0) {
     mostrarMensagem("Informe um valor de venda válido.", "erro");
     return false;
@@ -214,6 +224,11 @@ function validarProduto(produto) {
 
   if (!produto.dt_cadastro_produto) {
     mostrarMensagem("Informe a data de cadastro.", "erro");
+    return false;
+  }
+
+  if (!produto.status_produto) {
+    mostrarMensagem("Selecione o status do produto.", "erro");
     return false;
   }
 
@@ -291,7 +306,11 @@ async function excluirProduto(produto) {
     .eq("produtoid", produto.produtoid);
 
   if (error) {
+    if (error.message.includes("orcamento_item_produtoid_fkey")) {
+    mostrarMensagem("Não é possível excluir este produto, pois ele está vinculado a um ou mais orçamentos.", "erro");
+  } else {
     mostrarMensagem("Erro ao excluir produto: " + error.message, "erro");
+  }
     return;
   }
 
