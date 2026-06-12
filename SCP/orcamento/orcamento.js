@@ -1,9 +1,3 @@
-//conexão com supabase
-const SUPABASE_URL = "https://bbphzdnivlifviemxgff.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_5DZjx6V6Cp68QRaFp-xE3g_u_lGR-CC";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const mensagem = document.getElementById("mensagem");
 const formOrcamento = document.getElementById("formularioOrcamento");
 const tabelaItensOrcamento = document.getElementById("corpoTabelaItensOrcamento");
@@ -25,8 +19,20 @@ const idVoltar = document.getElementById("voltar");
 const botaoNovoOrcamento = document.getElementById("botaoNovoOrcamento");
 const formularioOrcamento = document.getElementById("formularioOrcamento");
 const painelFormulario = document.getElementById("painelFormulario");
+const secaoListagemOrcamentos = document.getElementById("secaoListagemOrcamentos");
+const painelVisualizacao = document.getElementById("painelVisualizacao");
+const visualizarCodigo = document.getElementById("visualizarCodigo");
+const visualizarCliente = document.getElementById("visualizarCliente");
+const visualizarData = document.getElementById("visualizarData");
+const visualizarValidade = document.getElementById("visualizarValidade");
+const visualizarTotal = document.getElementById("visualizarTotal");
+const corpoTabelaVisualizarItens = document.getElementById("corpoTabelaVisualizarItens");
+const botaoFecharVisualizacao = document.getElementById("botaoFecharVisualizacao");
+const pesquisaCodigoInput = document.getElementById("pesquisaCodigo");
+const pesquisaClienteInput = document.getElementById("pesquisaCliente");
+const pesquisaValorMaximoInput = document.getElementById("pesquisaValorMaximo");
+const botaoPesquisar = document.getElementById("botaoPesquisar");
 
-//lista para armazenar dados
 let clientes = [];
 let produtos = [];
 let itensOrcamento = [];
@@ -47,8 +53,8 @@ function formatarData(data) {
   if (!data) {
     return "";
   }
-
-  return new Date(data).toLocaleDateString("pt-BR");
+  const partes = data.substring(0, 10).split('-');
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function formatarDataInput(data) {
@@ -86,6 +92,20 @@ function calcularValorTotalOrcamento() {
 
   valorTotalOrcamentoInput.value = valorTotal.toFixed(2);
   return valorTotal;
+}
+
+function obterDataAtualLocal(){
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+function aplicarRestricoesDeDatas() {
+  const hojeString = obterDataAtualLocal();
+  dataOrcamentoInput.min = hojeString;
+  dataValidadeOrcamentoInput.min = hojeString;
 }
 
 async function carregarClientes() {
@@ -175,6 +195,15 @@ async function carregarOrcamentos() {
       <td class="coluna-acoes"></td>
     `;
 
+    const botaoVisualizar = document.createElement("button");
+    botaoVisualizar.textContent = "Visualizar";
+    botaoVisualizar.className = "botao-cinza";
+    botaoVisualizar.type = "button";
+    botaoVisualizar.style.marginRight = "5px";
+    botaoVisualizar.addEventListener("click", function() {
+      visualizarOrcamentoCompleto(orcamento);
+    });
+
     const botaoEditar = document.createElement("button");
     botaoEditar.textContent = "Editar";
     botaoEditar.className = "btn-editar";
@@ -191,10 +220,66 @@ async function carregarOrcamentos() {
       excluirOrcamento(orcamento);
     });
 
+    linha.querySelector(".coluna-acoes").appendChild(botaoVisualizar)
     linha.querySelector(".coluna-acoes").appendChild(botaoEditar);
     linha.querySelector(".coluna-acoes").appendChild(botaoExcluir);
     tabelaOrcamentos.appendChild(linha);
   });
+}
+
+async function visualizarOrcamentoCompleto(orcamento) {
+  painelFormulario.style.display = "none";
+  secaoListagemOrcamentos.style.display = "none";
+  botaoNovoOrcamento.style.display = "none";
+  idVoltar.style.display = "none";
+  
+  const { data: itens, error } = await supabaseClient
+    .from("orcamento_item")
+    .select("produtoid, produtodesc, qt_produto, vl_unitario, vl_total")
+    .eq("orcamentoid", orcamento.orcamentoid)
+    .order("orcamentoitemid", { ascending: true });
+
+  if (error) {
+    mostrarMensagem("Erro ao buscar itens para visualização: " + error.message, "erro");
+    fecharVisualizacao();
+    return;
+  }
+
+  const cliente = buscarCliente(orcamento.clienteid);
+  
+  visualizarCodigo.textContent = orcamento.orcamentoid;
+  visualizarCliente.textContent = cliente ? cliente.nome_cliente : "Não identificado";
+  visualizarData.textContent = formatarData(orcamento.dt_orcamento);
+  visualizarValidade.textContent = formatarData(orcamento.dt_validade_orcamento);
+  visualizarTotal.textContent = formatarValor(orcamento.vl_total_orcamento);
+
+  corpoTabelaVisualizarItens.innerHTML = "";
+  itens.forEach(function(item) {
+    const produto = buscarProduto(item.produtoid);
+    const linhaItem = document.createElement("tr");
+    linhaItem.innerHTML = `
+      <td>${produto ? produto.ds_produto : item.produtodesc}</td>
+      <td>${item.qt_produto}</td>
+      <td>${formatarValor(item.vl_unitario)}</td>
+      <td>${formatarValor(item.vl_total)}</td>
+    `;
+    corpoTabelaVisualizarItens.appendChild(linhaItem);
+  });
+painelVisualizacao.style.display = "block";
+}
+
+function fecharFormulario() {
+  painelVisualizacao.style.display = "none";
+  secaoListagemOrcamentos.style.display = "block";
+  botaoNovoOrcamento.style.display = "block";
+  idVoltar.style.display = "block";
+}
+
+function fecharVisualizacao() {
+  painelVisualizacao.style.display = "none";
+  secaoListagemOrcamentos.style.display = "block";
+  botaoNovoOrcamento.style.display = "block";
+  idVoltar.style.display = "block";
 }
 
 function limparCamposItem() {
@@ -283,6 +368,7 @@ function adicionarItem() {
 }
 
 function validarOrcamento() {
+  const hojeString = obterDataAtualLocal();
   if (!clienteOrcamentoInput.value) {
     mostrarMensagem("Selecione um cliente.", "erro");
     return false;
@@ -293,8 +379,18 @@ function validarOrcamento() {
     return false;
   }
 
+  if (dataOrcamentoInput.value < hojeString) {
+    mostrarMensagem("A data do orçamento não pode ser menor que o dia atual.", "erro");
+    return false;
+  }
+
   if (!dataValidadeOrcamentoInput.value) {
     mostrarMensagem("Informe a data de validade.", "erro");
+    return false;
+  }
+
+  if (dataValidadeOrcamentoInput.value < hojeString) {
+    mostrarMensagem("A data de validade não pode ser menor que o dia atual.", "erro");
     return false;
   }
 
@@ -361,6 +457,10 @@ async function salvarOrcamento() {
 
 async function prepararEdicao(orcamento) {
   abrirFormulario();
+
+  dataOrcamentoInput.removeAttribute("min");
+  dataValidadeOrcamentoInput.removeAttribute("min");
+
   const { data, error } = await supabaseClient
     .from("orcamento_item")
     .select("orcamentoitemid, produtoid, produtodesc, qt_produto, vl_unitario, vl_total")
@@ -464,6 +564,36 @@ async function excluirOrcamento(orcamento) {
   carregarOrcamentos();
 }
 
+function filtrarOrcamentos() {
+  const filtroCodigo = pesquisaCodigoInput.value.toLowerCase().trim();
+  const filtroCliente = pesquisaClienteInput.value.toLowerCase().trim();
+  const filtroValorMax = pesquisaValorMaximoInput.value ? Number(pesquisaValorMaximoInput.value) : null;
+
+  const linhas = tabelaOrcamentos.querySelectorAll("tr");
+
+  linhas.forEach(function(linha) {
+    if (linha.cells.length < 5) return; 
+
+    const codigoCelular = linha.cells[0].textContent.toLowerCase();
+    const clienteCelular = linha.cells[1].textContent.toLowerCase();
+    
+    let valorTexto = linha.cells[4].textContent;
+    valorTexto = valorTexto.replace(/[R$\s]/g, "").replace(/\./g, "").replace(",", ".");
+    const valorCelular = Number(valorTexto || 0);
+
+    const bateCodigo = filtroCodigo === "" || codigoCelular.includes(filtroCodigo);
+    const bateCliente = filtroCliente === "" || clienteCelular.includes(filtroCliente);
+    
+    const bateValorMax = filtroValorMax === null || valorCelular <= filtroValorMax;
+
+    if (bateCodigo && bateCliente && bateValorMax) {
+      linha.style.display = "";
+    } else {
+      linha.style.display = "none";
+    }
+  });
+}
+
 function limparFormulario() {
   formOrcamento.reset();
   codigoOrcamentoInput.value = "";
@@ -480,15 +610,22 @@ function limparFormulario() {
 function abrirFormulario() {
   painelFormulario.style.display = "block";
   botaoNovoOrcamento.style.display = "none";
+  secaoListagemOrcamentos.style.display = "none";
+  painelVisualizacao.style.display = "none";
   idVoltar.style.display = "none";
-  btnCancelarEdicao.textContent = "Cancelar cadastro"
+
+  const hoje = obterDataAtualLocal();
+  dataOrcamentoInput.value = hoje;
+  dataValidadeOrcamentoInput.value = hoje;
+  aplicarRestricoesDeDatas();
 }
 
 function fecharFormulario() {
   limparFormulario();
   painelFormulario.style.display = "none";
-
+  secaoListagemOrcamentos.style.display = "block";
   botaoNovoOrcamento.style.display = "block";
+  idVoltar.style.display = "block";
   mensagem.textContent = "";
   mensagem.className = "mensagem";
 
@@ -525,6 +662,8 @@ btnAdicionarItem.addEventListener("click", function() {
   adicionarItem();
 });
 
+btnFecharVisualizacao.addEventListener("click", fecharVisualizacao);
+
 formOrcamento.addEventListener("submit", async function(evento) {
   evento.preventDefault();
   calcularValorTotalOrcamento();
@@ -540,7 +679,14 @@ btnCancelarEdicao.addEventListener("click", function() {
   fecharFormulario();
 });
 
+botaoPesquisar.addEventListener("click", function() {
+  filtrarOrcamentos();
+});
+
 async function iniciarPagina() {
+  painelFormulario.style.display = "none";
+  painelVisualizacao.style.display = "none";
+  
   await carregarClientes();
   await carregarProdutos();
   renderizarItensOrcamento();

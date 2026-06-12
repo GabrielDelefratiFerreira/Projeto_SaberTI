@@ -27,12 +27,29 @@
                 <button type="button" id="botaoCancelarEdicao" style="display:none">Cancelar edição</button>
             </form>
         </div>
+
         <a href="../menu/home.html" id="voltar">
             <button class="botao-cinza">Voltar</button>
         </a>
-        <div id="secaoListagemCategorias">
-            <div>
+
+            <div id="secaoListagemCategorias">
                 <h2>Categorias cadastradas</h2>
+                <div class="containerPesquisa">
+                    <div class="linhaPesquisa">
+                        <div class="colunaInput">
+                            <label for="pesquisaCodigo">Código</label>
+                            <input type="number" id="pesquisaCodigo" placeholder="Ex: 3">
+                        </div>
+
+                        <div class="colunaInput coluna-input-larga"> 
+                            <label for="pesquisaDescricao">Descrição</label>
+                            <input type="text" id="pesquisaDescricao" placeholder="Digite o nome ou descrição...">
+                        </div>
+                        
+                        <button type="button" id="btnPesquisarFiltros" class="btn-pesquisar">Pesquisar</button>
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -44,10 +61,10 @@
                     <tbody id="corpoTabelaCategorias"></tbody>
                 </table>
             </div>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../conexaoSupaBase/conexao.js"></script>
     <script src="categorias.js"></script>
 
 </body>

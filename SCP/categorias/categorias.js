@@ -1,10 +1,5 @@
-const SUPABASE_URL = "https://bbphzdnivlifviemxgff.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_5DZjx6V6Cp68QRaFp-xE3g_u_lGR-CC";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const mensagem = document.getElementById("mensagem");
-const formCategoria = document.getElementById("formularioCategoria");
+const formularioCategoria = document.getElementById("formularioCategoria");
 const tabelaCategorias = document.getElementById("corpoTabelaCategorias");
 const categoriaIdInput = document.getElementById("codigoCategoria");
 const descricaoCategoriaInput = document.getElementById("descricaoCategoria");
@@ -13,8 +8,12 @@ const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
 const idVoltar = document.getElementById("voltar");
 const botaoNovaCategoria = document.getElementById("botaoNovaCategoria");
 const painelCategoria = document.getElementById("painelCategoria");
-const formularioCategoria = document.getElementById("formularioCategoria");
 const secaoCategoriaCadastradas = document.getElementById("secaoListagemCategorias");
+const pesqCodigo = document.getElementById("pesquisaCodigo");
+const pesqDescricao = document.getElementById("pesquisaDescricao");
+const btnPesquisarFiltros = document.getElementById("btnPesquisarFiltros");
+
+let listaCategoriasGlobal = [];
 
 function mostrarMensagem(texto, tipo) {
   mensagem.textContent = texto;
@@ -52,27 +51,30 @@ async function carregarCategorias() {
     .order("categoriaprodutoid", { ascending: true });
 
   if (error) {
-    tabelaCategorias.innerHTML = `
-      <tr>
-        <td colspan="3">Erro ao carregar categorias.</td>
-      </tr>
-    `;
+    tabelaCategorias.innerHTML = `<tr><td colspan="3">Erro ao carregar categorias.</td></tr>`;
     mostrarMensagem("Erro ao buscar categorias: " + error.message, "erro");
     return;
   }
 
+  listaCategoriasGlobal = data;
+
   if (data.length === 0) {
-    tabelaCategorias.innerHTML = `
-      <tr>
-        <td colspan="3">Nenhuma categoria cadastrada.</td>
-      </tr>
-    `;
+    tabelaCategorias.innerHTML = `<tr><td colspan="3">Nenhuma categoria cadastrada.</td></tr>`;
     return;
   }
 
+  renderizarTabelaCategorias(listaCategoriasGlobal);
+}
+
+function renderizarTabelaCategorias(categorias) {
   tabelaCategorias.innerHTML = "";
 
-  data.forEach(function(categoria) {
+  if (categorias.length === 0) {
+    tabelaCategorias.innerHTML = `<tr><td colspan="3">Nenhuma categoria encontrada para esta busca.</td></tr>`;
+    return;
+  }
+
+  categorias.forEach(function(categoria) {
     const linha = document.createElement("tr");
 
     linha.innerHTML = `
@@ -105,23 +107,36 @@ async function carregarCategorias() {
 
 function prepararEdicao(categoria) {
   abrirFormulario();
+
   categoriaIdInput.value = categoria.categoriaprodutoid;
   descricaoCategoriaInput.value = categoria.ds_categoria_produto;
+
   btnSalvar.textContent = "Atualizar";
   btnSalvar.classList.add("btn-editar");
+
+  btnCancelarEdicao.textContent = "Cancelar edição";
+  btnCancelarEdicao.className = "btn-cancelar";
   btnCancelarEdicao.style.display = "inline-block";
   idVoltar.style.display = "none";
+  
   mostrarMensagem("Editando a categoria: " + categoria.ds_categoria_produto, "sucesso");
 }
 
 function cancelarEdicao() {
-  formCategoria.reset();
+  formularioCategoria.reset();
   categoriaIdInput.value = "";
+
   btnSalvar.textContent = "Cadastrar";
   btnSalvar.classList.remove("btn-editar");
+
   btnCancelarEdicao.style.display = "none";
+  idVoltar.style.display = "block"
+
   mensagem.textContent = "";
   mensagem.className = "mensagem";
+
+  pesqCodigo.value = "";
+  pesqDescricao.value = "";
 }
 
 async function salvarCategoria() {
@@ -156,7 +171,7 @@ async function salvarCategoria() {
   }
 
   mostrarMensagem("Categoria salva com sucesso!", "sucesso");
-  formCategoria.reset();
+  formularioCategoria.reset();
   fecharFormulario();
   await carregarCategorias();
 }
@@ -184,6 +199,7 @@ async function atualizarCategoria() {
 
   cancelarEdicao();
   mostrarMensagem("Categoria atualizada com sucesso!", "sucesso");
+  fecharFormulario();
   await carregarCategorias();
 }
 
@@ -211,19 +227,11 @@ async function excluirCategoria(categoria) {
   }
 
   if (categoriaIdInput.value == categoria.categoriaprodutoid) {
-    limparFormulario();
+    cancelarEdicao();
   }
 
   mostrarMensagem("Categoria excluída com sucesso!", "sucesso");
   await carregarCategorias();
-}
-
-function limparFormulario() {
-  formCategoria.reset();
-  btnSalvar.textContent = "Cadastrar";
-  btnSalvar.classList.remove("btn-editar");
-  btnCancelarEdicao.textContent = "Cancelar cadastro";
-  idVoltar.style.display = "block";
 }
 
 function abrirFormulario() {
@@ -231,12 +239,17 @@ function abrirFormulario() {
   botaoNovaCategoria.style.display = "none";
   idVoltar.style.display = "none";
   secaoCategoriaCadastradas.style.display = "none";
-  btnCancelarEdicao.style.display = "none";
-  btnCancelarEdicao.textContent = "Cancelar cadastro"
+
+  btnSalvar.textContent = "Cadastrar";
+  btnSalvar.classList.remove("btn-editar");
+
+  btnCancelarEdicao.textContent = "Cancelar cadastro";
+  btnCancelarEdicao.className = "btn-cancelar";
+  btnCancelarEdicao.style.display = "inline-block";
 }
 
 function fecharFormulario() {
-  limparFormulario();
+  cancelarEdicao();
   painelCategoria.style.display = "none";
   botaoNovaCategoria.style.display = "block";
   idVoltar.style.display = "block";
@@ -246,7 +259,7 @@ function fecharFormulario() {
 
 }
 
-formCategoria.addEventListener("submit", async function(evento) {
+formularioCategoria.addEventListener("submit", async function(evento) {
   evento.preventDefault();
 
   if (categoriaIdInput.value !== "") {
@@ -262,6 +275,30 @@ botaoNovaCategoria.addEventListener("click", function() {
 
 btnCancelarEdicao.addEventListener("click", function() {
   fecharFormulario();;
+});
+
+btnPesquisarFiltros.addEventListener("click", function() {
+  const codigoFiltro = pesqCodigo.value.trim();
+  const descricaoFiltro = pesqDescricao.value.toLowerCase().trim();
+
+  if (descricaoFiltro !== "" && descricaoFiltro.length < 3) {
+    alert("Para pesquisar por descrição, digite pelo menos 3 caracteres.");
+    return;
+  }
+
+  if (codigoFiltro === "" && descricaoFiltro === "") {
+    renderizarTabelaCategorias(listaCategoriasGlobal);
+    return;
+  }
+
+  const resultadoFiltrado = listaCategoriasGlobal.filter(function(categoria) {
+    const bateCodigo = codigoFiltro === "" || String(categoria.categoriaprodutoid) === codigoFiltro;
+    const bateDescricao = descricaoFiltro === "" || categoria.ds_categoria_produto.toLowerCase().includes(descricaoFiltro);
+
+    return bateCodigo && bateDescricao;
+  });
+
+  renderizarTabelaCategorias(resultadoFiltrado);
 });
 
 carregarCategorias();

@@ -17,7 +17,7 @@
             <form id="formularioOrcamento">
 
                 <label for="codigoOrcamento">Código do orçamento</label>
-                <input type="text" id="codigoOrcamento" readonly>
+                <input type="text" id="codigoOrcamento" placeholder="Gerado automaticamente" readonly>
 
                 <label for="clienteOrcamento">Cliente selecionado</label>
                 <select id="clienteOrcamento">
@@ -84,12 +84,60 @@
             </div>
         </div>
 
+        <div id="painelVisualizacao"class="painel-visualizacao" style="display: none;">
+            <h2>Resumo do Orçamento</h2>
+            <hr>
+            
+            <p><strong>Código do Orçamento:</strong> <span id="visualizarCodigo"></span></p>
+            <p><strong>Cliente:</strong> <span id="visualizarCliente"></span></p>
+            <p><strong>Data do Orçamento:</strong> <span id="visualizarData"></span></p>
+            <p><strong>Data de Validade:</strong> <span id="visualizarValidade"></span></p>
+            <p class="valor-destaque"><strong>Valor Total Geral:</strong> <span id="visualizarTotal"></span></p>
+            
+            <h3>Itens Cadastrados</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto/Descrição</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unitário</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabelaVisualizarItens"></tbody>
+            </table>
+            
+            <button type="button" id="btnFecharVisualizacao" class="botao-cinza" style="margin-top: 15px;">Fechar Visualização</button>
+        </div>
+
         <a href="../menu/home.html" id="voltar">
             <button class="botao-cinza">Voltar</button>
         </a>
 
-        <div>
+        <div id="secaoListagemOrcamentos">
             <h2>Orçamentos cadastrados</h2>
+
+            <div class="container-pesquisa-grupo">
+        <div class="grid-pesquisa">
+            <div class="campoPesquisa">
+                <label for="pesquisaCodigo">Código</label>
+                <input type="text" id="pesquisaCodigo" placeholder="Ex: 15">
+            </div>
+            
+            <div class="campoPesquisa">
+                <label for="pesquisaCliente">Cliente</label>
+                <input type="text" id="pesquisaCliente" placeholder="Nome do cliente...">
+            </div>
+            
+            <div class="campoPesquisa">
+                <label for="pesquisaValorMaximo">Valor Total Máximo</label>
+                <input type="number" id="pesquisaValorMaximo" step="0.01" placeholder="Ex: 50000.00">
+            </div>
+            
+            <button type="button" id="botaoPesquisar" class="botao-pesquisa-bloco">Filtrar</button>
+        </div>
+    </div>
+
             <table>
                 <thead>
                     <tr>
@@ -107,6 +155,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../conexaoSupaBase/conexao.js"></script>
     <script src="orcamento.js"></script>
 
 </body>

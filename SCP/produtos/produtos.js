@@ -1,8 +1,3 @@
-const SUPABASE_URL = "https://bbphzdnivlifviemxgff.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_5DZjx6V6Cp68QRaFp-xE3g_u_lGR-CC";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const mensagem = document.getElementById("mensagem");
 const formProduto = document.getElementById("formularioProduto");
 const tabelaProdutos = document.getElementById("corpoTabelaProdutos");
@@ -16,7 +11,16 @@ const statusProdutoInput = document.getElementById("statusProduto");
 const btnSalvar = document.getElementById("botaoSalvar");
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
 const idVoltar = document.getElementById("voltar");
+const botaoNovoProduto = document.getElementById("botaoNovoProduto");
+const painelProduto = document.getElementById("painelProduto");
+const secaoListagemProdutos = document.getElementById("secaoListagemProdutos");
+const pesqCodigo = document.getElementById("pesquisaCodigo");
+const pesqCategoria = document.getElementById("pesquisaCategoria");
+const pesqStatus = document.getElementById("pesquisaStatus");
+const pesqDescricao = document.getElementById("pesquisaDescricao");
+const btnPesquisarFiltros = document.getElementById("btnPesquisarFiltros");
 
+let listaProdutosGlobal = [];
 let categorias = [];
 
 function mostrarMensagem(texto, tipo) {
@@ -92,12 +96,18 @@ async function carregarCategorias() {
 
   categorias = data;
   categoriaProdutoInput.innerHTML = '<option value="">Selecione uma categoria</option>';
+  pesqCategoria;innerHTML = '<option value = ">Todas</option>';
 
   categorias.forEach(function(categoria) {
     const option = document.createElement("option");
     option.value = categoria.categoriaprodutoid;
     option.textContent = categoria.ds_categoria_produto;
     categoriaProdutoInput.appendChild(option);
+  
+    const optionPesq = document.createElement("option");
+    optionPesq.value = categoria.categoriaprodutoid;
+    optionPesq.textContent = categoria.ds_categoria_produto;
+    pesqCategoria.appendChild(optionPesq);
   });
 }
 
@@ -108,27 +118,30 @@ async function carregarProdutos() {
     .order("produtoid", { ascending: true });
 
   if (error) {
-    tabelaProdutos.innerHTML = `
-      <tr>
-        <td colspan="8">Erro ao carregar produtos.</td>
-      </tr>
-    `;
+    tabelaProdutos.innerHTML = `<tr><td colspan="8">Erro ao carregar produtos.</td></tr>`;
     mostrarMensagem("Erro ao buscar produtos: " + error.message, "erro");
     return;
   }
 
+  listaProdutosGlobal = data;
+
   if (data.length === 0) {
-    tabelaProdutos.innerHTML = `
-      <tr>
-        <td colspan="8">Nenhum produto cadastrado.</td>
-      </tr>
-    `;
+    tabelaProdutos.innerHTML = `<tr><td colspan="8">Nenhum produto cadastrado.</td></tr>`;
     return;
   }
 
+  renderizarTabelaProdutos(listaProdutosGlobal);
+} 
+
+function renderizarTabelaProdutos(produtos) {
   tabelaProdutos.innerHTML = "";
 
-  data.forEach(function(produto) {
+  if (produtos.length === 0) {
+    tabelaProdutos.innerHTML = `<tr><td colspan="8">Nenhum produto encontrado para esta busca.</td></tr>`;
+    return;
+  }
+
+  produtos.forEach(function(produto) {
     const linha = document.createElement("tr");
 
     linha.innerHTML = `
@@ -164,7 +177,16 @@ async function carregarProdutos() {
   });
 }
 
+function obterDataAtualLocal(){
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
 function prepararEdicao(produto) {
+  abrirFormulario();
   produtoIdInput.value = produto.produtoid;
   categoriaProdutoInput.value = produto.categoriaprodutoid;
   descricaoProdutoInput.value = produto.ds_produto;
@@ -172,9 +194,14 @@ function prepararEdicao(produto) {
   valorVendaProdutoInput.value = produto.vl_venda_produto;
   dataCadastroProdutoInput.value = formatarDataInput(produto.dt_cadastro_produto);
   statusProdutoInput.value = produto.status_produto;
+  
   btnSalvar.textContent = "Atualizar";
   btnSalvar.classList.add("btn-editar");
+
+  btnCancelarEdicao.textContent = "Cancelar edição"
+  btnCancelarEdicao.className = "btn-cancelar";
   btnCancelarEdicao.style.display = "inline-block";
+  
   idVoltar.style.display = "none";
   mostrarMensagem("Editando o produto: " + produto.ds_produto, "sucesso");
 }
@@ -182,12 +209,43 @@ function prepararEdicao(produto) {
 function cancelarEdicao() {
   formProduto.reset();
   produtoIdInput.value = "";
+
   btnSalvar.textContent = "Cadastrar";
   btnSalvar.classList.remove("btn-editar");
   btnCancelarEdicao.style.display = "none";
+  
   idVoltar.style.display = "block";
   mensagem.textContent = "";
   mensagem.className = "mensagem";
+  pesqCodigo.value = "";
+  pesqCategoria.value = "";
+  pesqStatus.value = "";
+  pesqDescricao.value = "";
+}
+
+function abrirFormulario(){
+  painelProduto.style.display = "block";
+  botaoNovoProduto.style.display = "none";
+  secaoListagemProdutos.style.display = "none";
+  idVoltar.style.display = "none";
+
+  dataCadastroProdutoInput.value = obterDataAtualLocal();
+
+  btnSalvar.textContent = "Cadastrar";
+  btnSalvar.classList.remove("btn-editar");
+
+  btnCancelarEdicao.textContent = "Cancelar cadastro";
+  btnCancelarEdicao.className = "btn-cancelar";
+  btnCancelarEdicao.style.display = "inline-block"
+}
+
+function fecharFormulario(){
+  cancelarEdicao();
+  painelProduto.style.display = "none";
+  botaoNovoProduto.style.display = "block";
+  secaoListagemProdutos.style.display = "block";
+  idVoltar.style.display = "block";
+  btnCancelarEdicao.style.display = "none";
 }
 
 function montarProduto() {
@@ -196,7 +254,7 @@ function montarProduto() {
     ds_produto: descricaoProdutoInput.value.trim(),
     obs_produto: observacaoProdutoInput.value.trim(),
     vl_venda_produto: Number(valorVendaProdutoInput.value),
-    dt_cadastro_produto: dataCadastroProdutoInput.value,
+    dt_cadastro_produto: dataCadastroProdutoInput.value || obterDataAtualLocal(),
     status_produto: statusProdutoInput.value
   };
 }
@@ -248,7 +306,7 @@ async function salvarProduto() {
     const resultadoCodigo = await buscarProximoCodigoProduto();
 
     if (resultadoCodigo.error) {
-      mostrarMensagem("Erro ao buscar prÃ³ximo cÃ³digo do produto: " + resultadoCodigo.error.message, "erro");
+      mostrarMensagem("Erro ao buscar proximo codigo do produto: " + resultadoCodigo.error.message, "erro");
       return;
     }
 
@@ -265,6 +323,7 @@ async function salvarProduto() {
 
   mostrarMensagem("Produto salvo com sucesso!", "sucesso");
   formProduto.reset();
+  fecharFormulario();
   await carregarProdutos();
 }
 
@@ -288,6 +347,7 @@ async function atualizarProduto() {
 
   cancelarEdicao();
   mostrarMensagem("Produto atualizado com sucesso!", "sucesso");
+  fecharFormulario();
   await carregarProdutos();
 }
 
@@ -332,8 +392,40 @@ formProduto.addEventListener("submit", async function(evento) {
   }
 });
 
-btnCancelarEdicao.addEventListener("click", function() {
-  cancelarEdicao();
+botaoNovoProduto.addEventListener("click", function(){
+  abrirFormulario();
+});
+
+btnCancelarEdicao.addEventListener("click", function(){
+  fecharFormulario();
+})
+
+btnPesquisarFiltros.addEventListener("click", function() {
+  const codigoFiltro = pesqCodigo.value.trim();
+  const categoriaFiltro = pesqCategoria.value;
+  const statusFiltro = pesqStatus.value;
+  const descricaoFiltro = pesqDescricao.value.toLowerCase().trim();
+
+  if (descricaoFiltro !== "" && descricaoFiltro.length < 3) {
+    alert("Para pesquisar por descrição, digite pelo menos 3 caracteres.");
+    return;
+  }
+
+  if (codigoFiltro === "" && categoriaFiltro === "" && statusFiltro === "" && descricaoFiltro === "") {
+    renderizarTabelaProdutos(listaProdutosGlobal);
+    return;
+  }
+
+  const resultadoFiltrado = listaProdutosGlobal.filter(function(produto) {
+    const bateCodigo = codigoFiltro === "" || String(produto.produtoid) === codigoFiltro;
+    const bateCategoria = categoriaFiltro === "" || String(produto.categoriaprodutoid) === categoriaFiltro;
+    const bateStatus = statusFiltro === "" || produto.status_produto === statusFiltro;
+    const bateDescricao = descricaoFiltro === "" || produto.ds_produto.toLowerCase().includes(descricaoFiltro);
+
+    return bateCodigo && bateCategoria && bateStatus && bateDescricao;
+  });
+
+  renderizarTabelaProdutos(resultadoFiltrado);
 });
 
 async function iniciarPagina() {

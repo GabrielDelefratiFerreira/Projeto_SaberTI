@@ -1,49 +1,29 @@
-/*
-  ============================================
-  CONFIGURAÇÃO DO SUPABASE
-  ============================================
-
-  Aqui configuramos a conexão do front-end com o Supabase.
-
-  Importante:
-  - SUPABASE_URL é a URL do seu projeto.
-  - SUPABASE_ANON_KEY é a chave pública.
-  - Nunca use service_role key no front-end.
-*/
-
-const SUPABASE_URL = "https://bbphzdnivlifviemxgff.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_5DZjx6V6Cp68QRaFp-xE3g_u_lGR-CC";
-
-/*
-  Cria o cliente de conexão com o Supabase.
-
-  A variável "supabase" vem da biblioteca que carregamos no HTML:
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-*/
-const supabaseClient = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);	
-
-/*
-  ============================================
-  PEGANDO ELEMENTOS DO HTML
-  ============================================
-
-  Usamos document.getElementById para acessar elementos da tela.
-  Assim conseguimos ler valores, alterar textos e criar ações.
-*/
-
 const formCliente = document.getElementById("formularioCliente");
 const tabelaClientes = document.getElementById("corpoTabelaClientes");
+
 const clienteIdInput = document.getElementById("codigoCliente");
 const tipoClienteInput = document.getElementById("tipoCliente");
+
 const cpfCnpjClienteInput = document.getElementById("cpfCnpjCliente");
 const nomeClienteInput = document.getElementById("nomeCliente");
+
 const mensagem = document.getElementById("mensagem");
 const btnSalvar = document.getElementById("botaoSalvar");
+
 const btnCancelarEdicao = document.getElementById("botaoCancelarEdicao");
 const idVoltar = document.getElementById("voltar");
+
+const botaoNovoCLiente = document.getElementById("botaoNovoCliente");
+const painelCliente = document.getElementById("painelCliente");
+
+const secaoListagemClientes = document.getElementById("secaoListagemClientes");
+
+const pesqCodigo = document.getElementById("pesquisaCodigo");
+const pesqTipo = document.getElementById("pesquisaTipo");
+const pesqNome = document.getElementById("pesquisaNome");
+const btnPesquisarFiltros = document.getElementById("btnPesquisarFiltros");
+
+let listaClientesGlobal = [];
 /*
   ============================================
   FUNÇÃO PARA MOSTRAR MENSAGEM NA TELA
@@ -129,70 +109,38 @@ function formatarCPFeCNPJ(cpfCnpjCliente){
 */
 
 async function carregarClientes() {
-  /*
-    Faz um SELECT na tabela cliente.
-
-    Estamos buscando as colunas:
-    - clienteid
-    - tipo_cliente
-    - cpf_cnpj_cliente
-    - nome_cliente
-
-    E ordenando pelo clienteid em ordem crescente.
-  */
   const { data, error } = await supabaseClient
     .from("cliente")
     .select("clienteid, tipo_cliente, cpf_cnpj_cliente, nome_cliente")
     .order("clienteid", { ascending: true });
 
-  /*
-    Se der erro na consulta, mostramos uma mensagem na tabela
-    e também uma mensagem de erro acima da listagem.
-  */
   if (error) {
-    tabelaClientes.innerHTML = `
-      <tr>
-        <td colspan="5">Erro ao carregar clientes.</td>
-      </tr>
-    `;
-
+    tabelaClientes.innerHTML = `<tr><td colspan="5">Erro ao carregar clientes.</td></tr>`;
     mostrarMensagem("Erro ao buscar clientes: " + error.message, "erro");
     return;
   }
 
-  /*
-    Se a consulta funcionar, mas não houver nenhum cliente,
-    mostramos uma mensagem dizendo que não há registros.
-  */
+  listaClientesGlobal = data;
+
   if (data.length === 0) {
-    tabelaClientes.innerHTML = `
-      <tr>
-        <td colspan="5">Nenhum cliente cadastrado.</td>
-      </tr>
-    `;
+    tabelaClientes.innerHTML = `<tr><td colspan="5">Nenhum cliente cadastrado.</td></tr>`;
     return;
   }
 
-  /*
-    Limpamos o corpo da tabela antes de preencher.
-    Isso evita duplicar linhas quando recarregamos os clientes.
-  */
+  renderizarTabelaClientes(listaClientesGlobal);
+}
+
+function renderizarTabelaClientes(clientes){
   tabelaClientes.innerHTML = "";
 
-  /*
-    Percorremos a lista de clientes retornada pelo Supabase.
+  if (clientes.length === 0) {
+    tabelaClientes.innerHTML = `<tr><td colspan="5">Nenhum cliente encontrado para esta busca.</td></tr>`;
+    return;
+  }
 
-    Para cada cliente, criamos uma linha <tr>.
-  */
-  data.forEach(function(cliente) {
+  clientes.forEach(function(cliente) {
     const linha = document.createElement("tr");
 
-    /*
-      Criamos as colunas principais da linha.
-
-      A última coluna recebe a classe "coluna-acoes".
-      Nessa coluna colocaremos os botões Editar e Excluir.
-    */
     linha.innerHTML = `
       <td>${cliente.clienteid}</td>
       <td>${formatarTipoCliente(cliente.tipo_cliente)}</td>
@@ -201,59 +149,43 @@ async function carregarClientes() {
       <td class="coluna-acoes"></td>
     `;
 
-    /*
-      ============================================
-      BOTÃO EDITAR
-      ============================================
-    */
-
     const botaoEditar = document.createElement("button");
-
     botaoEditar.textContent = "Editar";
     botaoEditar.className = "btn-editar";
     botaoEditar.type = "button";
-
-    /*
-      Quando clicar no botão Editar,
-      chamamos a função prepararEdicao
-      passando o cliente da linha atual.
-    */
     botaoEditar.addEventListener("click", function() {
       prepararEdicao(cliente);
     });
 
-    /*
-      ============================================
-      BOTÃO EXCLUIR
-      ============================================
-    */
-
     const botaoExcluir = document.createElement("button");
-
     botaoExcluir.textContent = "Excluir";
     botaoExcluir.className = "btn-excluir";
     botaoExcluir.type = "button";
-
-    /*
-      Quando clicar no botão Excluir,
-      chamamos a função excluirCliente
-      passando o cliente da linha atual.
-    */
     botaoExcluir.addEventListener("click", function() {
       excluirCliente(cliente);
     });
 
-    /*
-      Adicionamos os botões dentro da coluna Ações.
-    */
     linha.querySelector(".coluna-acoes").appendChild(botaoEditar);
     linha.querySelector(".coluna-acoes").appendChild(botaoExcluir);
-
-    /*
-      Adicionamos a linha pronta dentro do tbody da tabela.
-    */
     tabelaClientes.appendChild(linha);
   });
+}
+
+function abrirFormulario(){
+  painelCliente.style.display = "block";
+  botaoNovoCLiente.style.display = "none";
+  secaoListagemClientes.style.display = "none";
+  idVoltar.style.display = "none";
+  btnCancelarEdicao.style.display = "inline-block";
+}
+
+function fecharFormulario(){
+  cancelarEdicao();
+  painelCliente.style.display = "none";
+  botaoNovoCLiente.style.display = "block";
+  secaoListagemClientes.style.display = "block";
+  idVoltar.style.display = "block";
+  btnCancelarEdicao.style.display = "none";
 }
 
 /*
@@ -267,6 +199,7 @@ async function carregarClientes() {
 */
 
 function prepararEdicao(cliente) {
+  abrirFormulario();
   /*
     Preenche o campo código.
     Esse campo é importante porque usaremos o ID para saber qual cliente atualizar.
@@ -349,6 +282,9 @@ function cancelarEdicao() {
   */
   mensagem.textContent = "";
   mensagem.className = "mensagem";
+  pesqCodigo.value = "";
+  pesqTipo.value = "";
+  pesqNome.value = "";
 }
 
 /*
@@ -431,6 +367,7 @@ if (apenasNumero.length != 11 && apenasNumero.length != 14) {
     Limpamos o formulário.
   */
   formCliente.reset();
+  fecharFormulario();
 
   /*
     Recarregamos a listagem para mostrar o novo cliente na tabela.
@@ -488,9 +425,9 @@ async function atualizarNomeCliente() {
   /*
     Se deu certo, mostramos mensagem de sucesso.
   */
-  cancelarEdicao();
 
   mostrarMensagem("Cliente atualizado com sucesso!", "sucesso");
+  fecharFormulario();
 
   /*
     Recarregamos a tabela para mostrar o nome atualizado.
@@ -612,8 +549,40 @@ formCliente.addEventListener("submit", async function(evento) {
   chamamos a função cancelarEdicao.
 */
 
+botaoNovoCLiente.addEventListener("click", function() {
+  abrirFormulario();
+  btnCancelarEdicao.textContent = "Cancelar cadastro";
+});
+
 btnCancelarEdicao.addEventListener("click", function() {
-  cancelarEdicao();
+  fecharFormulario();
+});
+
+btnPesquisarFiltros.addEventListener("click", function() {
+  const codigoFiltro = pesqCodigo.value.trim();
+  const tipoFiltro = pesqTipo.value;
+  const nomeFiltro = pesqNome.value.toLowerCase().trim();
+
+  if (nomeFiltro !== "" && nomeFiltro.length < 3) {
+    alert("Para pesquisar por nome, digite pelo menos 3 caracteres.");
+    return;
+  }
+
+  if (codigoFiltro === "" && tipoFiltro === "" && nomeFiltro === "") {
+    renderizarTabelaClientes(listaClientesGlobal);
+    return;
+  }
+
+ 
+  const resultadoFiltrado = listaClientesGlobal.filter(function(cliente) {
+  const bateCodigo = codigoFiltro === "" || String(cliente.clienteid) === codigoFiltro;
+  const bateTipo = tipoFiltro === "" || cliente.tipo_cliente === tipoFiltro;
+  const bateNome = nomeFiltro === "" || cliente.nome_cliente.toLowerCase().includes(nomeFiltro);
+
+    return bateCodigo && bateTipo && bateNome;
+  });
+
+  renderizarTabelaClientes(resultadoFiltrado);
 });
 
 /*
